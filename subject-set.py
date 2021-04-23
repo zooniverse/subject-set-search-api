@@ -4,7 +4,7 @@ from panoptes_client import Project, SubjectSet
 project = Project.find(12268)
 
 for subject_set in project.links.subject_sets:
-    print subject_set.id
+    print(subject_set.id)
     if 'indexFields' in subject_set.metadata:
         print(subject_set.metadata['indexFields'])
         index_fields = (subject_set.metadata['indexFields']).split(',')

@@ -7,8 +7,8 @@ mkdir ./databases
 
 # run the import csv cmd using csvs-to-sqlite
 echo ---
-echo "Importing ./*.csv to db: ./databases/subjects.db"
-csvs-to-sqlite --replace-tables ./*.csv ./databases/subjects.db
+echo "Importing ./data/*.csv to db: ./databases/subjects.db"
+csvs-to-sqlite --replace-tables ./data/*.csv ./databases/subjects.db
 
 # inspect the databases to create and inspect file
 # used in publishing the database files via datasette

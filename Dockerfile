@@ -6,10 +6,12 @@ WORKDIR /mnt/datasette
 # for csv import - https://datasette.io/tools/csvs-to-sqlite
 # for datasette db maniupluations and tools - https://datasette.io/tools/sqlite-utils
 # for geojson api responses - https://pypi.org/project/geojson/
-RUN pip install csvs-to-sqlite sqlite-utils
+RUN pip install csvs-to-sqlite sqlite-utils panoptes-client
 
 # Add the csv data files
-COPY data/ .
+COPY subject-set.py ./
+RUN mkdir ./data
+RUN python subject-set.py
 
 # our custom script for converting CSV files to database
 COPY import-csv-files-to-sqlite.sh /usr/local/bin/
