@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: subject-set-search-api-production-app
+  labels:
+    app: subject-set-search-api-production-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: subject-set-search-api-production-app
+  template:
+    metadata:
+      labels:
+        app: subject-set-search-api-production-app
+    spec:
+      containers:
+        - name: subject-set-search-api-production-app
+          image: zooniverse/subject-set-search-api:__IMAGE_TAG__
+          resources:
+             requests:
+               memory: "500Mi"
+               cpu: "10m"
+             limits:
+               memory: "500Mi"
+               cpu: "1000m"
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: subject-set-search-api-production-app
+spec:
+  selector:
+    app: subject-set-search-api-production-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: NodePort
