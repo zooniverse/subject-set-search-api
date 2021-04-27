@@ -9,7 +9,7 @@ for subject_set in project.links.subject_sets:
         print(subject_set.metadata['indexFields'])
         index_fields = (subject_set.metadata['indexFields']).split(',')
 
-        headers = ['subject_id']
+        headers = ['priority', 'subject_id']
         for field in index_fields:
             headers.append(field)
 
@@ -17,6 +17,11 @@ for subject_set in project.links.subject_sets:
         for subject in subject_set.subjects:
             row = {}
             row['subject_id'] = subject.id
+            row['priority'] = -1
+            if 'priority' in subject.metadata:
+                row['priority'] = subject.metadata['priority']
+            if '#priority' in subject.metadata:
+                row['priority'] = subject.metadata['#priority']
             for field in index_fields:
                 row[field] = subject.metadata[field]
             rows.append(row)
