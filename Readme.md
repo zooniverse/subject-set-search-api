@@ -1,3 +1,8 @@
+## Production API
+
+Browse the data, and run SQL queries at
+https://subject-set-search-api.zooniverse.org
+
 ## Installation
 
 Use docker and docker-compose, no other way is supported
