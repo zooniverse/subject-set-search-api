@@ -3,6 +3,16 @@
 Browse the data, and run SQL queries at
 https://subject-set-search-api.zooniverse.org
 
+### Example queries
+
+All subjects from set 92752 where `subject.metadata.Date` contains 'December'.
+
+https://subject-set-search-api.zooniverse.org/subjects/92752?_sort=rowid&Date__contains=December
+
+Or as JSON.
+
+https://subject-set-search-api.zooniverse.org/subjects/92752.json?_sort=rowid&Date__contains=December
+
 ## Installation
 
 Use docker and docker-compose, no other way is supported
