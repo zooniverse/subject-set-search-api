@@ -1,4 +1,4 @@
-FROM datasetteproject/datasette:0.56
+FROM datasetteproject/datasette:0.57
 
 WORKDIR /mnt/datasette
 
