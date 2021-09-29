@@ -68,3 +68,7 @@ sqlite3 /mnt/databases/folder/database.db
 # start datasette in config directoy & cors mode
 datasette -h 0.0.0.0 --cors ./databases
 ```
+
+## Updates
+
+- 2021.09.29: Intentional rebuild triggered.
