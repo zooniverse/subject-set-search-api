@@ -6,7 +6,10 @@ from panoptes_client import Project, SubjectSet
 # that will be included in the API
 project_ids = [ 12268 ]
 
-for project in project_ids:
+for project_id in project_ids:
+
+    project = Project.find(12268)
+
     for subject_set in project.links.subject_sets:
         print(subject_set.id)
         if 'indexFields' in subject_set.metadata:
