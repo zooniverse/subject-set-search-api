@@ -8,7 +8,7 @@ project_ids = [ 12268, 16957 ]
 
 for project_id in project_ids:
 
-    project = Project.find(12268)
+    project = Project.find(project_id)
 
     for subject_set in project.links.subject_sets:
         print(subject_set.id)
