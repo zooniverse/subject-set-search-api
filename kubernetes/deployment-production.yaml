@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: subject-set-search-api-production-app
-          image: zooniverse/subject-set-search-api:__IMAGE_TAG__
+          image: zooniverse/subject-set-search-api:latest
           resources:
              requests:
                memory: "250Mi"
@@ -26,6 +26,7 @@ spec:
                cpu: "1000m"
           ports:
             - containerPort: 80
+          imagePullPolicy: Always
 ---
 apiVersion: v1
 kind: Service

@@ -29,7 +29,7 @@ pipeline {
     stage('Dry run deployments') {
       agent any
       steps {
-        sh "sed 's/__IMAGE_TAG__/${GIT_COMMIT}/g' kubernetes/deployment-production.tmpl | kubectl --context azure apply --dry-run=client --record -f -"
+        sh "kubectl --context azure apply --dry-run=client --record -f kubernetes/deployment-production.yaml"
       }
     }
 
@@ -37,7 +37,12 @@ pipeline {
       when { branch 'main' }
       agent any
       steps {
-        sh "sed 's/__IMAGE_TAG__/${GIT_COMMIT}/g' kubernetes/deployment-production.tmpl | kubectl --context azure apply --record -f -"
+        sh "kubectl --context azure apply --record -f kubernetes/deployment-production.yaml"
+        /* the following ensures new pods are created using latest tag
+           this is due to the spec template including the imagePullPolicy: Always
+           and then when the deployment restarts the pods. Without the extra deployment
+           restart the pods won't recreate as the spec template won't have changed */
+        sh "kubectl --context azure rollout restart deployment subject-set-search-api-production-app"
       }
     }
   }
@@ -49,7 +54,7 @@ pipeline {
           slackSend (
             color: '#00FF00',
             message: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})",
-            channel: "#ops"
+            channel: "#deploys"
           )
         }
       }
@@ -61,7 +66,7 @@ pipeline {
           slackSend (
             color: '#FF0000',
             message: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})",
-            channel: "#ops"
+            channel: "#deploys"
           )
         }
       }
