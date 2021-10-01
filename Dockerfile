@@ -8,9 +8,20 @@ WORKDIR /mnt/datasette
 # for geojson api responses - https://pypi.org/project/geojson/
 RUN pip install csvs-to-sqlite sqlite-utils panoptes-client
 
+# add BUILD_DATE arg to invalidate the cache
+ARG BUILD_DATE=''
+
 # Add the csv data files
 COPY subject-set.py ./
 RUN mkdir ./data
+
+# bake this into the image for reference
+# and invalidate the docker image cache to rebuild each time (remote data source may change)
+# https://docs.docker.com/engine/reference/builder/#impact-on-build-caching
+ENV BUILD_DATE=$BUILD_DATE
+RUN echo building at $BUILD_DATE
+
+# build the subject set csv files from the main API
 RUN python subject-set.py
 
 # our custom script for converting CSV files to database

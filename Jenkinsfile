@@ -9,12 +9,16 @@ pipeline {
 
   stages {
     stage('Build Subject Set Search API Docker image') {
+      environment {
+        JOB_TIME = sh (returnStdout: true, script: "date '+%A %W %Y %X'").trim()
+      }
       agent any
       steps {
         script {
           def dockerRepoName = 'zooniverse/subject-set-search-api'
           def dockerImageName = "${dockerRepoName}:${GIT_COMMIT}"
-          def newImage = docker.build(dockerImageName)
+          def buildArgs = "--build-arg BUILD_DATE='${JOB_TIME}' ."
+          def newImage = docker.build(dockerImageName, buildArgs)
           newImage.push()
 
           if (BRANCH_NAME == 'main') {
