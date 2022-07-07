@@ -4,7 +4,7 @@ from panoptes_client import Project, SubjectSet
 # update this list of project ids
 # to build linked subject sets data files
 # that will be included in the API
-project_ids = [ 12268, 12561, 16957, 5481 ]
+project_ids = [ 12268, 12561, 16957, 5481, 17426 ]
 
 for project_id in project_ids:
 
