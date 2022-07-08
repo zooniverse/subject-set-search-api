@@ -46,8 +46,8 @@ jobs:
 
     - name: Modify & apply template
       run: |
-        kubectl --context azure apply --record -f kubernetes/deployment-production.yaml
-        kubectl --context azure rollout restart deployment subject-set-search-api-production-app
+        kubectl apply -f kubernetes/deployment-production.yaml
+        kubectl rollout restart deployment subject-set-search-api-production-app
   slack_notification:
     name: Slack notification
     uses: zooniverse/ci-cd/.github/workflows/slack_notification.yaml@main
