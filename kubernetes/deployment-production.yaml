@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: subject-set-search-api-production-app
-          image: zooniverse/subject-set-search-api:latest
+          image: ghcr.io/zooniverse/subject-set-search-api:latest
           resources:
              requests:
                memory: "250Mi"
