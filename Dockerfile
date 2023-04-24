@@ -8,6 +8,9 @@ WORKDIR /mnt/datasette
 # for geojson api responses - https://pypi.org/project/geojson/
 RUN pip install csvs-to-sqlite sqlite-utils panoptes-client
 
+# pandas 2.0 breaks csvs-to-sqlite.
+# https://github.com/simonw/csvs-to-sqlite/pull/92
+RUN pip install --force-reinstall "pandas~=1.0"
 # add BUILD_DATE arg to invalidate the cache
 ARG BUILD_DATE=''
 
