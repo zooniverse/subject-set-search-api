@@ -1,4 +1,4 @@
-FROM datasetteproject/datasette:0.57
+FROM datasetteproject/datasette:latest
 
 WORKDIR /mnt/datasette
 
@@ -32,7 +32,9 @@ RUN /usr/local/bin/import-csv-files-to-sqlite.sh
 COPY ./plugins/ ./databases/plugins/
 COPY settings.json ./databases/
 
+RUN datasette install datasette-hashed-urls
+
 # CMD ["datasette", "-p", "80", "-h", "0.0.0.0", "--cors", "/mnt/datasette/databases"]
 # fix the dbs not starting in immutable mode, https://github.com/simonw/datasette/pull/1229
-CMD ["datasette", "-p", "80", "-h", "0.0.0.0", "--cors", "-i", "databases/subjects.db", "--plugins-dir=databases/plugins", "--inspect-file=databases/inspect-data.json", "--setting", "sql_time_limit_ms", "60000",  "--setting", "max_returned_rows", "50000", "--setting", "hash_urls", "1"]
+CMD ["datasette", "-p", "80", "-h", "0.0.0.0", "--cors", "-i", "databases/subjects.db", "--plugins-dir=databases/plugins", "--inspect-file=databases/inspect-data.json", "--setting", "sql_time_limit_ms", "60000",  "--setting", "max_returned_rows", "50000"]
 
