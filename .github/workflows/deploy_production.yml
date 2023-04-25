@@ -1,0 +1,37 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  get_date:
+    runs-on: ubuntu-latest
+    outputs:
+      date: ${{ steps.date_getter.outputs.date }}
+    steps:
+      - id: date_getter
+        run: echo "date=$(date '+%A %W %Y %X')" >> $GITHUB_OUTPUT
+
+  build_and_push_image:
+      name: Build and Push Image
+      uses: zooniverse/ci-cd/.github/workflows/build_and_push_image.yaml@main
+      needs: get_date
+      with:
+        repo_name: subject-set-search-api
+        commit_id: ${{ github.sha }}
+        latest: true
+        build-args: |
+          BUILD_DATE: ${{ needs.get_date.outputs.date }}
+
+  deploy_production:
+    name: Deploy to Production
+    uses: zooniverse/ci-cd/.github/workflows/deploy_app.yaml@main
+    with:
+      app_name: subject-set-search-api
+      commit_id: ${{ github.sha }}
+      environment: production
+    secrets:
+      creds: ${{ secrets.AZURE_AKS }}
