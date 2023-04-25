@@ -23,7 +23,7 @@ jobs:
         repo_name: subject-set-search-api
         commit_id: ${{ github.sha }}
         latest: true
-        build-args: |
+        build_args: |
           BUILD_DATE: ${{ needs.get_date.outputs.date }}
 
   deploy_production:
