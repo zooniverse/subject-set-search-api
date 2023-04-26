@@ -51,16 +51,3 @@ jobs:
       run: |
         kubectl apply -f kubernetes/deployment-production.yaml
         kubectl rollout restart deployment subject-set-search-api-production-app
-  slack_notification:
-    name: Slack notification
-    uses: zooniverse/ci-cd/.github/workflows/slack_notification.yaml@main
-    needs: [build_and_push_image, deploy]
-    if: always()
-    with:
-      commit_id: ${{ github.sha }}
-      job_name: Build subject-set-search image
-      status: ${{ needs.build_and_push_image.result }}
-      title: "Subject set search API deploy complete"
-      title_link: "https://subject-set-search-api.zooniverse.org/subjects"
-    secrets:
-      slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
