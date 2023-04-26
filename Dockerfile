@@ -1,16 +1,8 @@
-FROM datasetteproject/datasette:latest
+FROM python:3.11.0-slim-bullseye AS panoptesData
 
-WORKDIR /mnt/datasette
+RUN pip install panoptes-client
 
-# Datasette tools
-# for csv import - https://datasette.io/tools/csvs-to-sqlite
-# for datasette db maniupluations and tools - https://datasette.io/tools/sqlite-utils
-# for geojson api responses - https://pypi.org/project/geojson/
-RUN pip install csvs-to-sqlite sqlite-utils panoptes-client
-
-# pandas 2.0 breaks csvs-to-sqlite.
-# https://github.com/simonw/csvs-to-sqlite/pull/92
-RUN pip install --force-reinstall "pandas~=1.0"
+WORKDIR /src
 # add BUILD_DATE arg to invalidate the cache
 ARG BUILD_DATE=''
 
@@ -26,6 +18,24 @@ RUN echo building at $BUILD_DATE
 
 # build the subject set csv files from the main API
 RUN python subject-set.py
+
+FROM datasetteproject/datasette:latest
+
+WORKDIR /mnt/datasette
+
+# Datasette tools
+# for csv import - https://datasette.io/tools/csvs-to-sqlite
+# for datasette db maniupluations and tools - https://datasette.io/tools/sqlite-utils
+# for geojson api responses - https://pypi.org/project/geojson/
+RUN pip install csvs-to-sqlite sqlite-utils
+
+# pandas 2.0 breaks csvs-to-sqlite.
+# https://github.com/simonw/csvs-to-sqlite/pull/92
+RUN pip install --force-reinstall "pandas~=1.0"
+
+RUN mkdir ./data
+
+COPY --from=panoptesData /src/data ./data
 
 # our custom script for converting CSV files to database
 COPY import-csv-files-to-sqlite.sh /usr/local/bin/
