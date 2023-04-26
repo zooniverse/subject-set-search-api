@@ -21,8 +21,12 @@ jobs:
     - name: Get current date
       id: date
       run: echo "BUILD_DATE=$(date +'+%A %W %Y %X')" >> $GITHUB_OUTPUT
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
     - name: Build and push
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v4
       with:
         push: true
         tags: |
