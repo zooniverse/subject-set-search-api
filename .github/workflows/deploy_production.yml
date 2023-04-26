@@ -1,4 +1,4 @@
-name: Deploy Datasette service
+name: Deploy to Production
 
 on:
   push:
