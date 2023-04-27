@@ -37,6 +37,4 @@ for project_id in project_ids:
             with open(filename, mode='w') as csv_file:
                 writer = csv.DictWriter(csv_file, fieldnames=headers)
                 writer.writeheader()
-
-                for row in rows:
-                    writer.writerow(row)
+                writer.writerows(rows)
