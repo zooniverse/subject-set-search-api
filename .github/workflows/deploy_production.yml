@@ -46,3 +46,20 @@ jobs:
       deploy_check: false
     secrets:
       creds: ${{ secrets.AZURE_AKS }}
+
+  restart_pod:
+      runs-on: ubuntu-latest
+      needs: deploy_production
+      steps:
+      - uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_AKS }}
+
+      - name: Set the target AKS cluster
+        uses: Azure/aks-set-context@v3
+        with:
+          cluster-name: microservices
+          resource-group: kubernetes
+
+      - name: Modify & apply template
+        run: kubectl rollout restart deployment subject-set-search-api-production-app
