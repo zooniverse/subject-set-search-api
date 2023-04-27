@@ -1,0 +1,13 @@
+{
+  "name": "Subject Set Search API",
+  "version": "0.0.0",
+  "description": "A searchable index of subject metadata, grouped by subject set. Powered by Datasette.",
+  "author": "Zooniverse <contact@zooniverse.org> (https://www.zooniverse.org/)",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "papaparse": "^5.4.1"
+  }
+}
