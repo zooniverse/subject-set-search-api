@@ -33,7 +33,7 @@ jobs:
           ghcr.io/zooniverse/subject-set-search-api:latest
           ghcr.io/zooniverse/subject-set-search-api:${{ github.sha }}
         build-args: |
-          BUILD_DATE: ${{ steps.date.outputs.BUILD_DATE }}
+          BUILD_DATE=${{ steps.date.outputs.BUILD_DATE }}
 
   deploy_production:
     name: Deploy to Production
