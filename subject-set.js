@@ -2,6 +2,7 @@ const fs = require('fs')
 const { unparse } = require('papaparse')
 
 const PROJECT_IDS = [ 12268, 12561, 16957, 5481, 17426 ]
+const PAGE_SIZE = 100
 
 let subject_sets = []
 let count = 0
@@ -12,7 +13,7 @@ const headers = {
 }
 
 async function getPagedSubjects(id, indexFields = [], page = 1) {
-  const url = `https://www.zooniverse.org/api/subjects?subject_set_id=${id}&page_size=50&page=${page}`
+  const url = `https://www.zooniverse.org/api/subjects?subject_set_id=${id}&page_size=${PAGE_SIZE}&page=${page}`
   const response = await fetch(url, { headers })
   const { subjects, meta } = await response.json()
   let rows = subjects.map(subject => {
