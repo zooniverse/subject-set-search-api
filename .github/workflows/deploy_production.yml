@@ -43,5 +43,6 @@ jobs:
       app_name: subject-set-search-api
       commit_id: ${{ github.sha }}
       environment: production
+      deploy_check: false
     secrets:
       creds: ${{ secrets.AZURE_AKS }}
