@@ -34,24 +34,32 @@ jobs:
           ghcr.io/zooniverse/subject-set-search-api:${{ github.sha }}
         build-args: |
           BUILD_DATE: ${{ steps.date.outputs.BUILD_DATE }}
-  deploy:
-    runs-on: ubuntu-latest
+
+  deploy_production:
+    name: Deploy to Production
+    uses: zooniverse/ci-cd/.github/workflows/deploy_app.yaml@main
     needs: build_and_push_image
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+    with:
+      app_name: subject-set-search-api
+      commit_id: ${{ github.sha }}
+      environment: production
+      deploy_check: false
+    secrets:
+      creds: ${{ secrets.AZURE_AKS }}
 
-    - uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_AKS }}
+  restart_pod:
+      runs-on: ubuntu-latest
+      needs: deploy_production
+      steps:
+      - uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_AKS }}
 
-    - name: Set the target AKS cluster
-      uses: Azure/aks-set-context@v3
-      with:
-        cluster-name: microservices
-        resource-group: kubernetes
+      - name: Set the target AKS cluster
+        uses: Azure/aks-set-context@v3
+        with:
+          cluster-name: microservices
+          resource-group: kubernetes
 
-    - name: Modify & apply template
-      run: |
-        kubectl apply -f kubernetes/deployment-production.yaml
-        kubectl rollout restart deployment subject-set-search-api-production-app
+      - name: Modify & apply template
+        run: kubectl rollout restart deployment subject-set-search-api-production-app
