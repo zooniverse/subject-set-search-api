@@ -80,7 +80,26 @@ const headers = {
   Accept: 'application/vnd.api+json; version=1'
 }
 
-async function fetchSubjects (projectId = '') {
+async function downloadProjectsData () {
+
+  const results = await Promise.all(projects.map(fetchAndWriteProjectsData))
+
+  console.log('Results: ', results)
+}
+
+async function fetchAndWriteProjectsData (project) {
+  try {
+    const subjects = await fetchAllSubjects(project.id)
+    console.log('subjects: ', subjects.map(s=>s.id))
+
+    return true
+  } catch (err) {
+    console.error('Error: ', err)
+    return false
+  }
+}
+
+async function fetchAllSubjects (projectId = '') {
   let allSubjects = []
   let continueFetching = true
   let page = 1
@@ -95,7 +114,7 @@ async function fetchSubjects (projectId = '') {
   return allSubjects
 }
 
-async function fetchSubjectsByPage (projectId = '', page = 1, pageSize = 5) {
+async function fetchSubjectsByPage (projectId = '', page = 1, pageSize = 20) {
   const url = `https://www.zooniverse.org/api/subjects?project_id=${projectId}&page=${page}&page_size=${pageSize}`
   
   try {
@@ -108,7 +127,5 @@ async function fetchSubjectsByPage (projectId = '', page = 1, pageSize = 5) {
   }
 }
 
-fetchSubjects(21084)
-
-
+downloadProjectsData()
 
