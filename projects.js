@@ -88,11 +88,8 @@ async function main () {
 /*
 Fetches all Subjects from one Project and writes to a CSV file.
 
-Input:
-- (object) project
-
 Output:
-- (bool) : true if fetch & write succeeds, false otherwise.
+(bool) true if fetch & write succeeds, false otherwise.
  */
 async function processOneProject (project) {
   try {
@@ -107,13 +104,10 @@ async function processOneProject (project) {
 }
 
 /*
-Fetches all Subjects from a Project.
-
-Input:
-- (string) projectId
+Fetches ALL Subjects from a Project.
 
 Ouput:
-- (array of objects) : array of Panoptes Subject resources 
+(array of objects) array of Panoptes Subject resources 
  */
 async function fetchAllSubjects (projectId = '') {
   let allSubjects = []
@@ -130,6 +124,14 @@ async function fetchAllSubjects (projectId = '') {
   return allSubjects
 }
 
+/*
+Fetches SOME Subjects from a Project.
+
+Output: (object) {
+  subjects: (array) array of Panoptes Subject resources
+  meta: (object) contains .count (total items available) and .page_count (total pages available)
+}
+ */
 async function fetchSubjectsByPage (projectId = '', page = 1, pageSize = 20) {
   const url = `https://www.zooniverse.org/api/subjects?project_id=${projectId}&page=${page}&page_size=${pageSize}`
   
