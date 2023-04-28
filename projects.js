@@ -80,14 +80,21 @@ const headers = {
   Accept: 'application/vnd.api+json; version=1'
 }
 
-async function downloadProjectsData () {
-
-  const results = await Promise.all(projects.map(fetchAndWriteProjectsData))
-
+async function main () {
+  const results = await Promise.all(projects.map(processOneProject))
   console.log('Results: ', results)
 }
 
-async function fetchAndWriteProjectsData (project) {
+/*
+Fetches all Subjects from one Project and writes to a CSV file.
+
+Input:
+- (object) project
+
+Output:
+- (bool) : true if fetch & write succeeds, false otherwise.
+ */
+async function processOneProject (project) {
   try {
     const subjects = await fetchAllSubjects(project.id)
     console.log('subjects: ', subjects.map(s=>s.id))
@@ -99,6 +106,15 @@ async function fetchAndWriteProjectsData (project) {
   }
 }
 
+/*
+Fetches all Subjects from a Project.
+
+Input:
+- (string) projectId
+
+Ouput:
+- (array of objects) : array of Panoptes Subject resources 
+ */
 async function fetchAllSubjects (projectId = '') {
   let allSubjects = []
   let continueFetching = true
@@ -127,5 +143,5 @@ async function fetchSubjectsByPage (projectId = '', page = 1, pageSize = 20) {
   }
 }
 
-downloadProjectsData()
+main()
 
