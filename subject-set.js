@@ -4,42 +4,47 @@ const { unparse } = require('papaparse')
 const PROJECT_IDS = [ 12268, 12561, 16957, 5481, 17426 ]
 const PAGE_SIZE = 100
 
-let subject_sets = []
-let count = 0
-
 const headers = {
   'Content-Type': 'application/json',
   Accept: 'application/vnd.api+json; version=1'
 }
 
-async function getPagedSubjects(id, indexFields = [], page = 1) {
+function subjectMetadataRow(subject, indexFields = []) {
+  const row = {
+    subject_id: subject.id,
+    priority: -1
+  }
+  row.priority = subject.metadata.priority || subject.metadata['#priority'] || -1
+  indexFields.forEach(field => {
+    row[field] = subject.metadata[field]
+  })
+  return row
+}
+
+async function getPagedSubjects(subjectSet, page = 1) {
+  const { id } = subjectSet
+  const indexFields = subjectSet.metadata.indexFields.split(',')
   const url = `https://www.zooniverse.org/api/subjects?subject_set_id=${id}&page_size=${PAGE_SIZE}&page=${page}`
   const response = await fetch(url, { headers })
   const { subjects, meta } = await response.json()
-  let rows = subjects.map(subject => {
-    const row = {
-      subject_id: subject.id,
-      priority: -1
-    }
-    row.priority = subject.metadata.priority || subject.metadata['#priority'] || -1
-    indexFields.forEach(field => {
-      row[field] = subject.metadata[field]
-    })
-    return row
-  })
+  const rows = subjects.map(subject => subjectMetadataRow(subject, indexFields))
   if (meta.subjects.page_count > page) {
-    const nextPage = await getPagedSubjects(id, indexFields, page + 1)
+    const nextPage = await getPagedSubjects(subjectSet, page + 1)
     return rows.concat(nextPage)
   } else {
+    console.log({ id: subjectSet.id, subjects: rows.length })
     return rows
   }
 }
 
-async function getSubjectSets(ids = []) {
+async function getSubjectSets(project) {
+  const ids = project.links.subject_sets
   const url = `https://www.zooniverse.org/api/subject_sets?id=${ids.join(',')}&page_size=${ids.length}`
   const response = await fetch(url, { headers })
   const { subject_sets } = await response.json()
-  return subject_sets.filter(s => !!s.metadata.indexFields)
+  const indexedSets = subject_sets.filter(s => !!s.metadata.indexFields)
+  console.log({ id: project.id, sets: indexedSets.length })
+  return indexedSets
 }
 
 async function getProjects() {
@@ -49,33 +54,32 @@ async function getProjects() {
   return projects
 }
 
+function onFileWrite(error) {
+  if (error) {
+    console.error(error)
+  }
+}
+
+async function writeCSVFile(subjectSet) {
+  const subjects = await getPagedSubjects(subjectSet)
+  const csv = unparse(subjects)
+  fs.writeFile(`./data/${subjectSet.id}.csv`, csv, onFileWrite)
+  return subjects
+}
+
 async function buildDataFiles() {
+  let subjectSets = []
+  let count = 0
   const projects = await getProjects()
-  const awaitSubjectSets = projects.map(async project => {
-    const subjectSets = await getSubjectSets(project.links.subject_sets)
-    console.log({ id: project.id, sets: subjectSets.length })
-    return subjectSets
+  const projectSubjectSets = await Promise.all(projects.map(getSubjectSets))
+  projectSubjectSets.forEach(projectSets => {
+    subjectSets = subjectSets.concat(projectSets)
   })
-  const projectSubjectSets = await Promise.all(awaitSubjectSets)
-  projectSubjectSets.forEach(subjectSets => {
-    subject_sets = subject_sets.concat(subjectSets)
-  })
-  const awaitSubjects = subject_sets.map(async s => {
-    const subjects = await getPagedSubjects(s.id, s.metadata.indexFields.split(','))
-    console.log({ id: s.id, subjects: subjects.length })
-    const csv = unparse(subjects)
-    fs.writeFile(`./data/${s.id}.csv`, csv, err => {
-      if (err) {
-        console.error(err)
-      }
-    })
-    return subjects
-  })
-  const subjectSetSubjects = await Promise.all(awaitSubjects)
+  const subjectSetSubjects = await Promise.all(subjectSets.map(writeCSVFile))
   subjectSetSubjects.forEach(subjects => {
     count = count + subjects.length
   })
-  console.log('subject sets:', subject_sets.length)
+  console.log('subject sets:', subjectSets.length)
   console.log('subjects:', count)
 }
 
