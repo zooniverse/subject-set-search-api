@@ -22,7 +22,7 @@ projects = [
   {
     "name": "Community Catalog (Stable Test Project)",
     "id": 21084,
-    "metadata_fields": [ "Item", "Notes", "folder", "image1", "image2", "#Hazard", "Oversize", "group_id", "Condition", "internal_id", "part_number", "Photographer", "#Other Number", "picture_agency", "Sensitive_Image", "Problematic_Language", "Notes on Problematic Language", "TMPDELETETHIS" ]
+    "metadata_fields": [ "Item", "Notes", "folder", "image1", "image2", "#Hazard", "Oversize", "group_id", "Condition", "internal_id", "part_number", "Photographer", "#Other Number", "picture_agency", "Sensitive_Image", "Problematic_Language", "Notes on Problematic Language" ]
   }
 ]
 
@@ -66,6 +66,9 @@ for tgtProject in projects:
     # writer.writerows(rows)
 */
 
+const fs = require('fs')
+const { unparse } = require('papaparse')
+
 // Note: this can be separated into its own JSON file
 const projects = [
   {
@@ -94,11 +97,10 @@ Output:
 async function processOneProject (project) {
   try {
     const subjects = await fetchAllSubjects(project.id)
-    console.log('subjects: ', subjects.map(s=>s.id))
+    return await writeProjectData(project, subjects)
 
-    return true
   } catch (err) {
-    console.error('Error: ', err)
+    console.error('ERROR: processOneProject ', err)
     return false
   }
 }
@@ -143,6 +145,40 @@ async function fetchSubjectsByPage (projectId = '', page = 1, pageSize = 20) {
   } catch (err) {
     throw(err)
   }
+}
+
+async function writeProjectData (project, subjects = []) {
+  try {
+    const csvRows = formatSubjectsForCsv(subjects, project.metadata_fields)
+    const data = unparse(csvRows)
+    const filename = `./data/projects-${project.id}.csv`
+    await fs.writeFile(filename, data, 'utf8', onWriteFile)
+    return true
+
+  } catch (err) {
+    throw(err)
+  }
+}
+
+function formatSubjectsForCsv (subjects = [], metadata_fields = []) {
+  return subjects.map(subject => {
+    const row = {}
+
+    // Add general
+    row['subject_id'] = subject.id
+
+    // Add metadata-specific fields
+    // TODO: handle metadata fields with special characters, e.g. # and !
+    metadata_fields.forEach(field => {
+      row[field] = subject.metadata[field] || ''
+    })
+
+    return row
+  })
+}
+
+function onWriteFile (err) {
+  if (err) { console.error('ERROR: onWriteFile ', err) }
 }
 
 main()
