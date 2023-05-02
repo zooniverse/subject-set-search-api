@@ -9,6 +9,35 @@ const headers = {
   Accept: 'application/vnd.api+json; version=1'
 }
 
+async function fetchWithRetry(url, retryCount = 0) {
+  const MAX_TRIES = 5
+  const DELAY = 2000
+
+  function fetchWithDelay(resolve, reject) {
+    setTimeout(async () => {
+      const response = await fetchWithRetry(url, retryCount + 1)
+      if (response && response.ok) {
+        resolve(response)
+      } else {
+        reject(new Error('Request failed'))
+      }
+    }, DELAY)
+  }
+
+  try {
+    const response = await fetch(url, { headers })
+    if (response && response.ok) {
+      return response
+    }
+  } catch (error) {
+    console.error(error)
+  }
+  if (retryCount < MAX_TRIES) {
+    return new Promise(fetchWithDelay)
+  }
+  throw new Error(`Max network retry count reached: ${MAX_TRIES}`)
+}
+
 function subjectMetadataRow(subject, indexFields = []) {
   const row = {
     subject_id: subject.id,
@@ -25,7 +54,7 @@ async function getPagedSubjects(subjectSet, page = 1) {
   const { id } = subjectSet
   const indexFields = subjectSet.metadata.indexFields.split(',')
   const url = `https://www.zooniverse.org/api/subjects?subject_set_id=${id}&page_size=${PAGE_SIZE}&page=${page}`
-  const response = await fetch(url, { headers })
+  const response = await fetchWithRetry(url)
   const { subjects, meta } = await response.json()
   const rows = subjects.map(subject => subjectMetadataRow(subject, indexFields))
   if (meta.subjects.page_count > page) {
@@ -40,7 +69,7 @@ async function getPagedSubjects(subjectSet, page = 1) {
 async function getSubjectSets(project) {
   const ids = project.links.subject_sets
   const url = `https://www.zooniverse.org/api/subject_sets?id=${ids.join(',')}&page_size=${ids.length}`
-  const response = await fetch(url, { headers })
+  const response = await fetchWithRetry(url)
   const { subject_sets } = await response.json()
   const indexedSets = subject_sets.filter(s => !!s.metadata.indexFields)
   console.log({ id: project.id, sets: indexedSets.length })
@@ -49,7 +78,7 @@ async function getSubjectSets(project) {
 
 async function getProjects() {
   const url = `https://www.zooniverse.org/api/projects?id=${PROJECT_IDS.join(',')}`
-  const response = await fetch(url, { headers })
+  const response = await fetchWithRetry(url)
   const { projects } = await response.json()
   return projects
 }
