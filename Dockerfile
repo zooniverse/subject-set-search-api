@@ -1,6 +1,6 @@
 FROM node:18-alpine AS panoptesData
 
-WORKDIR /src
+WORKDIR /app
 
 COPY package.json ./
 COPY package-lock.json ./
@@ -10,7 +10,7 @@ RUN npm ci
 ARG BUILD_DATE=''
 
 # Add the csv data files
-COPY subject-set.js ./
+COPY src/ ./src
 RUN mkdir ./data
 
 # bake this into the image for reference
@@ -20,7 +20,7 @@ ENV BUILD_DATE=$BUILD_DATE
 RUN echo building at $BUILD_DATE
 
 # build the subject set csv files from the main API
-RUN node subject-set.js
+RUN node src/subject-set.js
 
 FROM datasetteproject/datasette:latest
 
@@ -38,7 +38,7 @@ RUN pip install --force-reinstall "pandas~=1.0"
 
 RUN mkdir ./data
 
-COPY --from=panoptesData /src/data ./data
+COPY --from=panoptesData /app/data ./data
 
 # our custom script for converting CSV files to database
 COPY import-csv-files-to-sqlite.sh /usr/local/bin/

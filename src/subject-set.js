@@ -1,46 +1,10 @@
 const fs = require('fs')
 const { unparse } = require('papaparse')
 
+const fetchWithRetry = require('./fetchWithRetry')
+
 const PROJECT_IDS = [ 12268, 12561, 16957, 5481, 17426 ]
 const PAGE_SIZE = 100
-
-const headers = {
-  'Content-Type': 'application/json',
-  Accept: 'application/vnd.api+json; version=1'
-}
-
-async function fetchWithRetry(url, retryCount = 0) {
-  const MAX_TRIES = 5
-  const DELAY = 2000
-
-  function fetchWithDelay(resolve, reject) {
-    async function fetchJSON() {
-      const response = await fetchWithRetry(url, retryCount + 1)
-      if (response && response.ok) {
-        const body = await response.json()
-        resolve(body)
-      } else {
-        reject(new Error('Request failed'))
-      }
-    }
-
-    setTimeout(fetchJSON, DELAY)
-  }
-
-  try {
-    const response = await fetch(url, { headers })
-    if (response && response.ok) {
-      const body = await response.json()
-      return body
-    }
-  } catch (error) {
-    console.error(error)
-  }
-  if (retryCount < MAX_TRIES) {
-    return new Promise(fetchWithDelay)
-  }
-  throw new Error(`Max network retry count reached: ${MAX_TRIES}`)
-}
 
 function subjectMetadataRow(subject, indexFields = []) {
   const row = {
