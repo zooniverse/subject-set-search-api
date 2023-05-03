@@ -3,8 +3,6 @@
 # remove any existing (ephemeral) db as we're going to rebuild it
 rm -f "./databases/*.db"
 
-mkdir ./databases
-
 # run the import csv cmd using csvs-to-sqlite
 echo ---
 echo "Importing ./data/*.csv to db: ./databases/subjects.db"
