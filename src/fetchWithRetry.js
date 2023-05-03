@@ -9,19 +9,28 @@ const headers = {
 module.exports = async function fetchWithRetry(url, retryCount = 0) {
   function fetchWithDelay(resolve, reject) {
     async function fetchJSON() {
-      const response = await fetchWithRetry(url, retryCount + 1)
-      if (response && response.ok) {
-        const body = await response.json()
-        resolve(body)
-      } else {
-        if (retryCount < MAX_TRIES) {
-          return new Promise(fetchWithDelay)
+      try {
+        const response = await fetchWithRetry(url, retryCount + 1)
+        if (response && response.ok) {
+          const body = await response.json()
+          resolve(body)
         } else {
-          reject(new Error(`Max network retry count reached: ${MAX_TRIES}`))
+          if (retryCount < MAX_TRIES) {
+            return fetchWithRetry(url, retryCount + 1)
+          } else {
+            reject(new Error(`Max network retry count reached: ${MAX_TRIES}`))
+          }
+        }
+      } catch (error) {
+        if (retryCount < MAX_TRIES) {
+          return fetchWithRetry(url, retryCount + 1)
+        } else {
+          reject(error)
         }
       }
     }
 
+    console.log(`retrying ${url}, attempt: ${retryCount + 1}`)
     setTimeout(fetchJSON, DELAY)
   }
 
