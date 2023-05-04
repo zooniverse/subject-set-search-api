@@ -6,45 +6,45 @@ const headers = {
   Accept: 'application/vnd.api+json; version=1'
 }
 
-module.exports = async function fetchWithRetry(url, retryCount = 0) {
-  function fetchWithDelay(resolve, reject) {
-    async function fetchJSON() {
-      try {
-        const response = await fetchWithRetry(url, retryCount + 1)
-        if (response && response.ok) {
-          const body = await response.json()
-          resolve(body)
-        } else {
-          if (retryCount < MAX_TRIES) {
-            return fetchWithRetry(url, retryCount + 1)
-          } else {
-            reject(new Error(`Max network retry count reached: ${MAX_TRIES}`))
-          }
-        }
-      } catch (error) {
-        if (retryCount < MAX_TRIES) {
-          return fetchWithRetry(url, retryCount + 1)
-        } else {
-          reject(error)
-        }
-      }
-    }
-
-    console.log(`retrying ${url}, attempt: ${retryCount + 1}`)
-    setTimeout(fetchJSON, DELAY)
-  }
-
+async function fetchJSON(url) {
   try {
     const response = await fetch(url, { headers })
     if (response && response.ok) {
       const body = await response.json()
-      return body
+      return { body }
+    } else {
+      const error = new Error(`${response.status}: ${response.statusText} ${url}`)
+      return { error }
     }
   } catch (error) {
-    console.error(error)
+    return { error }
   }
-  if (retryCount < MAX_TRIES) {
-    return new Promise(fetchWithDelay)
+}
+
+function fetchWithDelay(url, delay = DELAY) {
+  return new Promise(function (resolve, reject) {
+    setTimeout(async function () {
+      const { body, error } = await fetchJSON(url)
+      if (body) {
+        resolve(body)
+      } else {
+        reject(error)
+      }
+    }, delay)
+  })
+}
+
+module.exports = async function fetchWithRetry(url, retryCount = 0, delay = 0) {
+  try {
+    if (retryCount > 0) {
+      console.log(`retrying ${url}, attempt: ${retryCount}`)
+    }
+    const body = await fetchWithDelay(url, delay)
+    return body
+  } catch (error) {
+    if (retryCount < MAX_TRIES) {
+      return fetchWithRetry(url, retryCount + 1, DELAY)
+    }
+    throw error
   }
-  throw new Error(`Max network retry count reached: ${MAX_TRIES}`)
 }
