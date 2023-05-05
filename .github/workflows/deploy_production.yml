@@ -53,5 +53,5 @@ jobs:
           cluster-name: microservices
           resource-group: kubernetes
 
-      - name: Modify & apply template
+      - name: Restart the pod
         run: kubectl rollout restart deployment subject-set-search-api-production-app
