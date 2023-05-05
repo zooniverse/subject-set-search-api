@@ -1,3 +1,4 @@
+# Build a Datasette image with tools and plugins that we need
 FROM datasetteproject/datasette:latest AS builder
 
 WORKDIR /mnt/datasette
@@ -20,6 +21,7 @@ COPY ./plugins/ ./databases/plugins/
 
 RUN datasette install datasette-hashed-urls
 
+# Build the Panoptes data CSVs with NodeJS
 FROM node:18-alpine AS panoptesData
 
 WORKDIR /app
@@ -28,13 +30,12 @@ COPY package.json ./
 COPY package-lock.json ./
 RUN npm ci
 
-# add BUILD_DATE arg to invalidate the cache
-ARG BUILD_DATE=''
-
 # Add the csv data files
 COPY src/ ./src
 RUN mkdir ./data
 
+# add BUILD_DATE arg to invalidate the cache
+ARG BUILD_DATE=''
 # bake this into the image for reference
 # and invalidate the docker image cache to rebuild each time (remote data source may change)
 # https://docs.docker.com/engine/reference/builder/#impact-on-build-caching
@@ -44,11 +45,20 @@ RUN echo building at $BUILD_DATE
 # build the subject set csv files from the main API
 RUN node src/subject-set.js
 
+# Build the final database from our custom Datasette image with Panoptes data.
 FROM builder
 
 WORKDIR /mnt/datasette
 
 RUN mkdir ./data
+
+# add BUILD_DATE arg to invalidate the cache
+ARG BUILD_DATE=''
+# bake this into the image for reference
+# and invalidate the docker image cache to rebuild each time (remote data source may change)
+# https://docs.docker.com/engine/reference/builder/#impact-on-build-caching
+ENV BUILD_DATE=$BUILD_DATE
+RUN echo building at $BUILD_DATE
 
 COPY --from=panoptesData /app/data ./data
 
