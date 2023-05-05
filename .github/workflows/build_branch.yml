@@ -14,7 +14,7 @@ jobs:
       run: echo "BUILD_DATE=$(date +'+%A %W %Y %X')" >> $GITHUB_OUTPUT
     outputs:
       BUILD_DATE: ${{ steps.date.outputs.BUILD_DATE }}
-  build_and_push_image:
+  build_image:
     name: Build test image
     runs-on: ubuntu-latest
     needs: build_date
