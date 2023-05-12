@@ -5,8 +5,8 @@ rm -f "./databases/*.db"
 
 # run the import csv cmd using csvs-to-sqlite
 echo ---
-echo "Importing ./data/*.csv to db: ./databases/subjects.db"
-csvs-to-sqlite --replace-tables ./data/*.csv ./databases/subjects.db
+echo "Importing ./data/subjects/*.csv to db: ./databases/subjects.db"
+csvs-to-sqlite --replace-tables ./data/subjects/*.csv ./databases/subjects.db
 
 # inspect the databases to create and inspect file
 # used in publishing the database files via datasette

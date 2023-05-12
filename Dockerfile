@@ -33,6 +33,7 @@ RUN npm ci
 # Add the csv data files
 COPY src/ ./src
 RUN mkdir ./data
+RUN mkdir ./data/subjects
 
 # add BUILD_DATE arg to invalidate the cache
 ARG BUILD_DATE=''
@@ -51,6 +52,7 @@ FROM builder
 WORKDIR /mnt/datasette
 
 RUN mkdir ./data
+RUN mkdir ./data/subjects
 
 # add BUILD_DATE arg to invalidate the cache
 ARG BUILD_DATE=''

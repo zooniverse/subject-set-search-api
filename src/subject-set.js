@@ -58,7 +58,7 @@ async function writeCSVFile(subjectSet) {
   const subjects = await getPagedSubjects(subjectSet)
   const cleanSubjects = [...new Set(subjects)]
   const csv = unparse(cleanSubjects)
-  fs.writeFile(`./data/${subjectSet.id}.csv`, csv, onFileWrite)
+  fs.writeFile(`./data/subjects/${subjectSet.id}.csv`, csv, onFileWrite)
   return cleanSubjects
 }
 
