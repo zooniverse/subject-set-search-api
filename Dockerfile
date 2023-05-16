@@ -34,6 +34,7 @@ RUN npm ci
 COPY src/ ./src
 RUN mkdir ./data
 RUN mkdir ./data/subjects
+RUN mkdir ./data/projects
 
 # add BUILD_DATE arg to invalidate the cache
 ARG BUILD_DATE=''
@@ -53,6 +54,7 @@ WORKDIR /mnt/datasette
 
 RUN mkdir ./data
 RUN mkdir ./data/subjects
+RUN mkdir ./data/projects
 
 # add BUILD_DATE arg to invalidate the cache
 ARG BUILD_DATE=''

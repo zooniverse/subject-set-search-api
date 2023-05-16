@@ -69,12 +69,19 @@ for tgtProject in projects:
 const fs = require('fs')
 const { unparse } = require('papaparse')
 
+const OUTPUT_DIR = './data/projects/'  // Trailing slash
+const TABLE_PREFIX = 'project-'
+
 // Note: this can be separated into its own JSON file
-const projects = [
+const PROJECTS = [
   {
     "name": "Community Catalog (Stable Test Project)",
     "id": 21084,
-    "metadata_fields": [ "Item", "Notes", "folder", "image1", "image2", "#Hazard", "Oversize", "group_id", "Condition", "internal_id", "part_number", "Photographer", "#Other Number", "picture_agency", "Sensitive_Image", "Problematic_Language", "Notes on Problematic Language", "TMPDELETETHIS" ]
+    "metadata_fields": [
+      "Item",
+      "Notes",
+      "folder",
+      "image1", "image2", "#Hazard", "Oversize", "group_id", "Condition", "internal_id", "part_number", "Photographer", "#Other Number", "picture_agency", "Sensitive_Image", "Problematic_Language", "Notes on Problematic Language", "TMPDELETETHIS" ]
   }
 ]
 
@@ -84,8 +91,15 @@ const headers = {
 }
 
 async function main () {
-  const results = await Promise.all(projects.map(processOneProject))
+  prepareOutputDirectory()
+  const results = await Promise.all(PROJECTS.map(processOneProject))
   console.log('Results: ', results)
+}
+
+function prepareOutputDirectory () {
+  if (!fs.existsSync(OUTPUT_DIR)) {
+    fs.mkdirSync(OUTPUT_DIR, { recursive: true })
+  }
 }
 
 /*
@@ -151,7 +165,7 @@ async function writeProjectData (project, subjects = []) {
   try {
     const csvRows = formatSubjectsForCsv(subjects, project.metadata_fields)
     const data = unparse(csvRows)
-    const filename = `./data/projects-${project.id}.csv`
+    const filename = `${OUTPUT_DIR}${TABLE_PREFIX}${project.id}.csv`
     await fs.writeFile(filename, data, 'utf8', onWriteFile)
     return true
 
