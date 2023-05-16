@@ -3,8 +3,10 @@ Get Subjects For Projects
 This script pulls every Subject from a list of Projects, then creates a new
 Datasette-ready database for that project.
 
-Input:
-- (hardcoded) projects: list of target projects
+Inputs/configurables:
+- (hardcoded) PROJECTS: list of target projects
+- (hardcoded) OUTPUT_DIR: Output directory
+- (hardcoded) TABLE_PREFIX: Prefix for database table name
 
 Output:
 - A Datasette-ready database for each project, named project-{project_id}
@@ -13,77 +15,29 @@ Output:
 Notes:
 - Currently used by 2023 Community & Crowds's Community Catalog
   (https://github.com/zooniverse/community-catalog)
-
-import csv
-from panoptes_client import Project, Subject
-
-# Note: this can be separated into its own JSON file
-projects = [
-  {
-    "name": "Community Catalog (Stable Test Project)",
-    "id": 21084,
-    "metadata_fields": [ "Item", "Notes", "folder", "image1", "image2", "#Hazard", "Oversize", "group_id", "Condition", "internal_id", "part_number", "Photographer", "#Other Number", "picture_agency", "Sensitive_Image", "Problematic_Language", "Notes on Problematic Language" ]
-  }
-]
-
-# For every Project, fetch every Subject associated with it.
-for tgtProject in projects:
-  print('Project ' + str(tgtProject['id']))
-
-  # Ensure the project exists. This should throw an error if it doesn't.
-  # TODO: error handling?
-  project = Project.find(tgtProject['id'])
-
-  # Fetch from /subjects?project
-  # Question: what about deleted Subjects, or retired Subjects? (What does "retired" mean in this context?) 
-  subjects = Subject.where(project_id = tgtProject['id'])
-
-  # Prepare the CSV data containers!
-  rows = []
-  headers = [ 'subject_id' ] + tgtProject['metadata_fields']
-
-  for subject in subjects:
-    print('  ' + str(subject.id))
-
-    # Set standard fields
-    row = {}
-    row['subject_id'] = subject.id
-
-    # Set metadata fields
-    for metadata_field in tgtProject['metadata_fields']:
-      if metadata_field in subject.metadata:
-        row[metadata_field] = subject.metadata[metadata_field]
-        
-    rows.append(row) 
-
-  print(headers)
-  print(rows)
-
-  filename = 'data/project-{id}.csv'.format(id=tgtProject['id'])
-  # with open(filename, mode='w') as csv_file:
-    # writer = csv.DictWriter(csv_file, fieldnames=headers)
-    # writer.writeheader()
-    # writer.writerows(rows)
 */
 
 const fs = require('fs')
 const { unparse } = require('papaparse')
 
+/*
+Input/Configurables
+--------------------------------------------------------------------------------
+ */
 const OUTPUT_DIR = './data/projects/'  // Trailing slash
-const TABLE_PREFIX = 'project-'
+const TABLE_PREFIX = 'proj_'
 
 // Note: this can be separated into its own JSON file
 const PROJECTS = [
   {
     "name": "Community Catalog (Stable Test Project)",
     "id": 21084,
-    "metadata_fields": [
-      "Item",
-      "Notes",
-      "folder",
-      "image1", "image2", "#Hazard", "Oversize", "group_id", "Condition", "internal_id", "part_number", "Photographer", "#Other Number", "picture_agency", "Sensitive_Image", "Problematic_Language", "Notes on Problematic Language", "TMPDELETETHIS" ]
+    "metadata_fields": [ "Item", "Notes", "folder", "image1", "image2", "#Hazard", "Oversize", "group_id", "Condition", "internal_id", "part_number", "Photographer", "#Other Number", "picture_agency", "Sensitive_Image", "Problematic_Language", "Notes on Problematic Language" ]
   }
 ]
+/*
+--------------------------------------------------------------------------------
+ */
 
 const headers = {
   'Content-Type': 'application/json',
@@ -91,11 +45,26 @@ const headers = {
 }
 
 async function main () {
+  console.log('--------')
+  console.log('Get Subjects For Projects (aka Projects script)')
+  console.log(`Fetching Subjects from ${PROJECTS.length} Projects`)
+  console.log('Starting...')
   prepareOutputDirectory()
   const results = await Promise.all(PROJECTS.map(processOneProject))
-  console.log('Results: ', results)
+  console.log('...done')
+  console.log('Subjects fetched: ')
+  PROJECTS.forEach((proj, index) => {
+    const result = results[index]
+    console.log(`- ${proj.name}: ${(results >= 0) ? results : 'ERROR'}`)
+  })
+  console.log('========')
 }
 
+/*
+Prepares the output directory, if necessary.
+This is mostly a convenience for local development; usually, the output dir is
+manually prepared by mkdir commands in the Dockerfile.
+ */
 function prepareOutputDirectory () {
   if (!fs.existsSync(OUTPUT_DIR)) {
     fs.mkdirSync(OUTPUT_DIR, { recursive: true })
@@ -105,8 +74,11 @@ function prepareOutputDirectory () {
 /*
 Fetches all Subjects from one Project and writes to a CSV file.
 
+Input:
+(object) project: single Project config.
+
 Output:
-(bool) true if fetch & write succeeds, false otherwise.
+(number) number of Subjects fetched & written. -1 on error.
  */
 async function processOneProject (project) {
   try {
@@ -114,8 +86,10 @@ async function processOneProject (project) {
     return await writeProjectData(project, subjects)
 
   } catch (err) {
-    console.error('ERROR: processOneProject ', err)
-    return false
+    console.error('ERROR: processOneProject()')
+    console.error('- error: ', err)
+    console.error('- args: ', project)
+    return -1
   }
 }
 
@@ -157,28 +131,58 @@ async function fetchSubjectsByPage (projectId = '', page = 1, pageSize = 20) {
     const { subjects, meta }  = await res.json()
     return { subjects, meta: meta.subjects }
   } catch (err) {
+    console.error('ERROR: fetchSubjectsByPage()')
+    console.error('- error: ', error)
+    console.error('- args: ', projectId, page, pageSize)
     throw(err)
   }
 }
 
+/*
+Writes all fetched Subjects from one Project to a CSV file.
+
+Input:
+(object) project: single Project config.
+(array of objects) subjects: array of Panoptes Subject resources
+
+Output:
+(number) number of Subjects written to file
+ */
 async function writeProjectData (project, subjects = []) {
   try {
     const csvRows = formatSubjectsForCsv(subjects, project.metadata_fields)
     const data = unparse(csvRows)
     const filename = `${OUTPUT_DIR}${TABLE_PREFIX}${project.id}.csv`
     await fs.writeFile(filename, data, 'utf8', onWriteFile)
-    return true
+    return subjects.length
 
   } catch (err) {
+    console.error('ERROR: writeProjectData()')
+    console.error('- error: ', err)
+    console.error('- args: ', project, subjects?.length)
     throw(err)
   }
 }
 
+/*
+Format Subject resources data from Panoptes into rows of CSV-ready data.
+For the database, each Project requires specific metadata fields/columns (plus
+general info fields such as Subject ID). These fields/columns are discussed with
+the project team in advance, and defined in the PROJECTS config object.
+
+Input:
+(array of objects) subjects: array of Panoptes Subject resources
+(array of strings) metadata_fields: the metadata fields of interest
+
+Output:
+(array of objects) array of subjects, in simple key-value pairs corresponding
+  to the project's required CSV format.
+ */
 function formatSubjectsForCsv (subjects = [], metadata_fields = []) {
   return subjects.map(subject => {
     const row = {}
 
-    // Add general
+    // Add general fields
     row['subject_id'] = subject.id
 
     // Add metadata-specific fields
@@ -192,8 +196,7 @@ function formatSubjectsForCsv (subjects = [], metadata_fields = []) {
 }
 
 function onWriteFile (err) {
-  if (err) { console.error('ERROR: onWriteFile ', err) }
+  if (err) { console.error('ERROR: onWriteFile() ', err) }
 }
 
 main()
-
