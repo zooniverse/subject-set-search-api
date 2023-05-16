@@ -47,6 +47,9 @@ RUN echo building at $BUILD_DATE
 # build the subject set csv files from the main API
 RUN node src/subject-set.js
 
+# build the Projects CSV files, from the main API
+RUN node src/projects.js
+
 # Build the final database from our custom Datasette image with Panoptes data.
 FROM builder
 
@@ -74,5 +77,5 @@ RUN /usr/local/bin/import-csv-files-to-sqlite.sh
 
 # CMD ["datasette", "-p", "80", "-h", "0.0.0.0", "--cors", "/mnt/datasette/databases"]
 # fix the dbs not starting in immutable mode, https://github.com/simonw/datasette/pull/1229
-CMD ["datasette", "-p", "80", "-h", "0.0.0.0", "--cors", "-i", "databases/subjects.db", "--plugins-dir=databases/plugins", "--inspect-file=databases/inspect-data.json", "--setting", "sql_time_limit_ms", "60000",  "--setting", "max_returned_rows", "50000"]
+CMD ["datasette", "-p", "80", "-h", "0.0.0.0", "--cors", "-i", "databases/subjects.db", "-i", "databases/projects.db", "--plugins-dir=databases/plugins", "--inspect-file=databases/inspect-data.json", "--setting", "sql_time_limit_ms", "60000",  "--setting", "max_returned_rows", "50000"]
 

@@ -8,6 +8,10 @@ echo ---
 echo "Importing ./data/subjects/*.csv to db: ./databases/subjects.db"
 csvs-to-sqlite --replace-tables ./data/subjects/*.csv ./databases/subjects.db
 
+echo ---
+echo "Importing ./data/projects/*.csv to db: ./databases/projects.db"
+csvs-to-sqlite --replace-tables ./data/projects/*.csv ./databases/projects.db
+
 # inspect the databases to create and inspect file
 # used in publishing the database files via datasette
 # https://docs.datasette.io/en/latest/settings.html?highlight=immutable#configuration-directory-mode
