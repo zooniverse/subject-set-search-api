@@ -34,6 +34,10 @@ const PROJECTS = [
     "name": "Community Catalog (Stable Test Project)",
     "id": 21084,
     "metadata_fields": [ "Item", "Notes", "folder", "image1", "image2", "#Hazard", "Oversize", "group_id", "Condition", "internal_id", "part_number", "Photographer", "#Other Number", "picture_agency", "Sensitive_Image", "Problematic_Language", "Notes on Problematic Language" ]
+  }, {
+    "name": "Scarlets & Blues (Performance Test Only)",  // Feel free to delete once Community Catalog goes live
+    "id": 12268,
+    "metadata_fields": [ "Date", "Page", "image", "Catalogue" ]
   }
 ]
 /*
@@ -118,7 +122,7 @@ Output: (object) {
   meta: (object) contains .count (total items available) and .page_count (total pages available)
 }
  */
-async function fetchSubjectsByPage(projectId = '', page = 1, pageSize = 20) {
+async function fetchSubjectsByPage(projectId = '', page = 1, pageSize = 100) {
   const url = `https://www.zooniverse.org/api/subjects?project_id=${projectId}&page=${page}&page_size=${pageSize}`
   
   try {
