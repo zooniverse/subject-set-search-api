@@ -55,7 +55,7 @@ async function main() {
   console.log('Subjects fetched: ')
   PROJECTS.forEach((proj, index) => {
     const result = results[index]
-    console.log(`- ${proj.name}: ${(results >= 0) ? results : 'ERROR'}`)
+    console.log(`- ${proj.name}: ${(result >= 0) ? result : 'ERROR'}`)
   })
   console.log('========')
 }
