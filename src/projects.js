@@ -19,6 +19,7 @@ Notes:
 
 const fs = require('fs')
 const { unparse } = require('papaparse')
+const fetchWithRetry = require('./fetchWithRetry')
 
 /*
 Input/Configurables
@@ -38,11 +39,6 @@ const PROJECTS = [
 /*
 --------------------------------------------------------------------------------
  */
-
-const headers = {
-  'Content-Type': 'application/json',
-  Accept: 'application/vnd.api+json; version=1'
-}
 
 async function main() {
   console.log('--------')
@@ -126,13 +122,11 @@ async function fetchSubjectsByPage(projectId = '', page = 1, pageSize = 20) {
   const url = `https://www.zooniverse.org/api/subjects?project_id=${projectId}&page=${page}&page_size=${pageSize}`
   
   try {
-    const res = await fetch(url, { headers })
-    if (!res.ok) throw new Error(`ERROR: fetchSubjectsByPage (${projectId}, ${page}, ${pageSize}`)
-    const { subjects, meta }  = await res.json()
+    const { subjects, meta }  = await fetchWithRetry(url)
     return { subjects, meta: meta.subjects }
   } catch (err) {
     console.error('ERROR: fetchSubjectsByPage()')
-    console.error('- error: ', error)
+    console.error('- error: ', err)
     console.error('- args: ', projectId, page, pageSize)
     throw(err)
   }
