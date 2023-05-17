@@ -44,7 +44,7 @@ const headers = {
   Accept: 'application/vnd.api+json; version=1'
 }
 
-async function main () {
+async function main() {
   console.log('--------')
   console.log('Get Subjects For Projects (aka Projects script)')
   console.log(`Fetching Subjects from ${PROJECTS.length} Projects`)
@@ -65,7 +65,7 @@ Prepares the output directory, if necessary.
 This is mostly a convenience for local development; usually, the output dir is
 manually prepared by mkdir commands in the Dockerfile.
  */
-function prepareOutputDirectory () {
+function prepareOutputDirectory() {
   if (!fs.existsSync(OUTPUT_DIR)) {
     fs.mkdirSync(OUTPUT_DIR, { recursive: true })
   }
@@ -80,7 +80,7 @@ Input:
 Output:
 (number) number of Subjects fetched & written. -1 on error.
  */
-async function processOneProject (project) {
+async function processOneProject(project) {
   try {
     const subjects = await fetchAllSubjects(project.id)
     return await writeProjectData(project, subjects)
@@ -99,7 +99,7 @@ Fetches ALL Subjects from a Project.
 Ouput:
 (array of objects) array of Panoptes Subject resources 
  */
-async function fetchAllSubjects (projectId = '') {
+async function fetchAllSubjects(projectId = '') {
   let allSubjects = []
   let continueFetching = true
   let page = 1
@@ -122,7 +122,7 @@ Output: (object) {
   meta: (object) contains .count (total items available) and .page_count (total pages available)
 }
  */
-async function fetchSubjectsByPage (projectId = '', page = 1, pageSize = 20) {
+async function fetchSubjectsByPage(projectId = '', page = 1, pageSize = 20) {
   const url = `https://www.zooniverse.org/api/subjects?project_id=${projectId}&page=${page}&page_size=${pageSize}`
   
   try {
@@ -148,7 +148,7 @@ Input:
 Output:
 (number) number of Subjects written to file
  */
-async function writeProjectData (project, subjects = []) {
+async function writeProjectData(project, subjects = []) {
   try {
     const csvRows = formatSubjectsForCsv(subjects, project.metadata_fields)
     const data = unparse(csvRows)
@@ -178,7 +178,7 @@ Output:
 (array of objects) array of subjects, in simple key-value pairs corresponding
   to the project's required CSV format.
  */
-function formatSubjectsForCsv (subjects = [], metadata_fields = []) {
+function formatSubjectsForCsv(subjects = [], metadata_fields = []) {
   return subjects.map(subject => {
     const row = {}
 
@@ -195,7 +195,7 @@ function formatSubjectsForCsv (subjects = [], metadata_fields = []) {
   })
 }
 
-function onWriteFile (err) {
+function onWriteFile(err) {
   if (err) { console.error('ERROR: onWriteFile() ', err) }
 }
 
