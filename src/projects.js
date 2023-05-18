@@ -19,6 +19,7 @@ Notes:
 
 const fs = require('fs')
 const { unparse } = require('papaparse')
+const fetchWithRetry = require('./fetchWithRetry')
 
 /*
 Input/Configurables
@@ -33,16 +34,15 @@ const PROJECTS = [
     "name": "Community Catalog (Stable Test Project)",
     "id": 21084,
     "metadata_fields": [ "Item", "Notes", "folder", "image1", "image2", "#Hazard", "Oversize", "group_id", "Condition", "internal_id", "part_number", "Photographer", "#Other Number", "picture_agency", "Sensitive_Image", "Problematic_Language", "Notes on Problematic Language" ]
+  }, {
+    "name": "Scarlets & Blues (Performance Test Only)",  // Feel free to delete once Community Catalog goes live
+    "id": 12268,
+    "metadata_fields": [ "Date", "Page", "image", "Catalogue" ]
   }
 ]
 /*
 --------------------------------------------------------------------------------
  */
-
-const headers = {
-  'Content-Type': 'application/json',
-  Accept: 'application/vnd.api+json; version=1'
-}
 
 async function main() {
   console.log('--------')
@@ -55,7 +55,7 @@ async function main() {
   console.log('Subjects fetched: ')
   PROJECTS.forEach((proj, index) => {
     const result = results[index]
-    console.log(`- ${proj.name}: ${(results >= 0) ? results : 'ERROR'}`)
+    console.log(`- ${proj.name}: ${(result >= 0) ? result : 'ERROR'}`)
   })
   console.log('========')
 }
@@ -122,17 +122,15 @@ Output: (object) {
   meta: (object) contains .count (total items available) and .page_count (total pages available)
 }
  */
-async function fetchSubjectsByPage(projectId = '', page = 1, pageSize = 20) {
+async function fetchSubjectsByPage(projectId = '', page = 1, pageSize = 100) {
   const url = `https://www.zooniverse.org/api/subjects?project_id=${projectId}&page=${page}&page_size=${pageSize}`
   
   try {
-    const res = await fetch(url, { headers })
-    if (!res.ok) throw new Error(`ERROR: fetchSubjectsByPage (${projectId}, ${page}, ${pageSize}`)
-    const { subjects, meta }  = await res.json()
+    const { subjects, meta }  = await fetchWithRetry(url)
     return { subjects, meta: meta.subjects }
   } catch (err) {
     console.error('ERROR: fetchSubjectsByPage()')
-    console.error('- error: ', error)
+    console.error('- error: ', err)
     console.error('- args: ', projectId, page, pageSize)
     throw(err)
   }
