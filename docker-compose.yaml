@@ -10,4 +10,5 @@ services:
     ports:
       - "8001:80"
     volumes:
+      - ./data:/app/data
       - ./plugins:/mnt/datasette/databases/plugins

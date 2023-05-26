@@ -1,19 +1,18 @@
+const { panoptes } = require('@zooniverse/panoptes-js')
 const MAX_TRIES = 5
 const DELAY = 2000
 
-const headers = {
-  'Content-Type': 'application/json',
-  Accept: 'application/vnd.api+json; version=1'
-}
-
-async function fetchJSON(url) {
+async function fetchJSON(endpoint, query) {
   try {
-    const response = await fetch(url, { headers })
+    const response = await panoptes.get(endpoint, {
+      env: 'production',
+      ...query
+    })
     if (response && response.ok) {
-      const body = await response.json()
-      return { body }
+      return response
     } else {
-      const error = new Error(`${response.status}: ${response.statusText} ${url}`)
+      const queryParams = Object.entries(query).map(([key, value]) => `${key}=${value}`)
+      const error = new Error(`${response.status}: ${response.statusText} ${endpoint}?${queryParams.join('&')}`)
       return { error }
     }
   } catch (error) {
@@ -21,10 +20,10 @@ async function fetchJSON(url) {
   }
 }
 
-function fetchWithDelay(url, delay = DELAY) {
+function fetchWithDelay(endpoint, query, delay = DELAY) {
   return new Promise(function (resolve, reject) {
     setTimeout(async function () {
-      const { body, error } = await fetchJSON(url)
+      const { body, error } = await fetchJSON(endpoint, query)
       if (body) {
         resolve(body)
       } else {
@@ -34,16 +33,17 @@ function fetchWithDelay(url, delay = DELAY) {
   })
 }
 
-module.exports = async function fetchWithRetry(url, retryCount = 0, delay = 0) {
+module.exports = async function fetchWithRetry(endpoint, query, retryCount = 0, delay = 0) {
   try {
     if (retryCount > 0) {
-      console.log(`retrying ${url}, attempt: ${retryCount}`)
+      const queryParams = Object.entries(query).map(([key, value]) => `${key}=${value}`)
+      console.log(`retrying ${endpoint}?${queryParams.join('&')}, attempt: ${retryCount}`)
     }
-    const body = await fetchWithDelay(url, delay)
+    const body = await fetchWithDelay(endpoint, query, delay)
     return body
   } catch (error) {
     if (retryCount < MAX_TRIES) {
-      return fetchWithRetry(url, retryCount + 1, DELAY)
+      return fetchWithRetry(endpoint, query, retryCount + 1, DELAY)
     }
     throw error
   }

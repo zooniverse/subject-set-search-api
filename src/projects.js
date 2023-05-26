@@ -123,10 +123,12 @@ Output: (object) {
 }
  */
 async function fetchSubjectsByPage(projectId = '', page = 1, pageSize = 100) {
-  const url = `https://www.zooniverse.org/api/subjects?project_id=${projectId}&page=${page}&page_size=${pageSize}`
-  
   try {
-    const { subjects, meta }  = await fetchWithRetry(url)
+    const { subjects, meta }  = await fetchWithRetry('/subjects', {
+      project_id: projectId,
+      page,
+      page_size: pageSize
+    })
     return { subjects, meta: meta.subjects }
   } catch (err) {
     console.error('ERROR: fetchSubjectsByPage()')
