@@ -21,8 +21,11 @@ function subjectMetadataRow(subject, indexFields = []) {
 async function getPagedSubjects(subjectSet, page = 1) {
   const { id } = subjectSet
   const indexFields = subjectSet.metadata.indexFields.split(',')
-  const url = `https://www.zooniverse.org/api/subjects?subject_set_id=${id}&page_size=${PAGE_SIZE}&page=${page}`
-  const { subjects, meta } = await fetchWithRetry(url)
+  const { subjects, meta } = await fetchWithRetry('/subjects', {
+    subject_set_id: id,
+    page_size: PAGE_SIZE,
+    page
+  })
   const rows = subjects.map(subject => subjectMetadataRow(subject, indexFields))
   if (meta.subjects.page_count > page) {
     const nextPage = await getPagedSubjects(subjectSet, page + 1)
@@ -35,16 +38,19 @@ async function getPagedSubjects(subjectSet, page = 1) {
 
 async function getSubjectSets(project) {
   const ids = project.links.subject_sets
-  const url = `https://www.zooniverse.org/api/subject_sets?id=${ids.join(',')}&page_size=${ids.length}`
-  const { subject_sets } = await fetchWithRetry(url)
+  const { subject_sets } = await fetchWithRetry('/subject_sets', {
+    id: ids.join(','),
+    page_size: ids.length
+  })
   const indexedSets = subject_sets.filter(s => !!s.metadata.indexFields)
   console.log({ id: project.id, sets: indexedSets.length })
   return indexedSets
 }
 
 async function getProjects() {
-  const url = `https://www.zooniverse.org/api/projects?id=${PROJECT_IDS.join(',')}`
-  const { projects } = await fetchWithRetry(url)
+  const { projects } = await fetchWithRetry('/projects', {
+    id: PROJECT_IDS.join(',')
+  })
   return projects
 }
 
