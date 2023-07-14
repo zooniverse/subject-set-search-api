@@ -41,7 +41,10 @@ const PROJECTS = [
   }, {
     "name": "How Did We Get Here?",
     "id": 20816,
-    "metadata_fields": [ "Item", "Notes", "folder", "image1", "image2", "#Hazard", "Oversize", "group_id", "Condition", "internal_id", "part_number", "Photographer", "#Other Number", "picture_agency", "Sensitive_Image", "Problematic_Language", "Notes on Problematic Language" ]
+    "metadata_fields": [
+      "image1", "image2", "internal_id", "group_id", "part_number", "folder", "#Hazard", "condition", "item", "picture_agency", "photographer", "oversize", "sensitive_image", "sensitive_image_note", "problematic_language", "probelmatic_language_notes", "#Other Number", "notes"
+      // Yes, there's a typo in probelmatic_language_notes.
+    ]
   }
 ]
 /*
