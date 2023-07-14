@@ -38,6 +38,10 @@ const PROJECTS = [
     "name": "Scarlets & Blues (Performance Test Only)",  // Feel free to delete once Community Catalog goes live
     "id": 12268,
     "metadata_fields": [ "Date", "Page", "image", "Catalogue" ]
+  }, {
+    "name": "How Did We Get Here?",
+    "id": 20816,
+    "metadata_fields": [ "Item", "Notes", "folder", "image1", "image2", "#Hazard", "Oversize", "group_id", "Condition", "internal_id", "part_number", "Photographer", "#Other Number", "picture_agency", "Sensitive_Image", "Problematic_Language", "Notes on Problematic Language" ]
   }
 ]
 /*
