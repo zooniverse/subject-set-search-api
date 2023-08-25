@@ -22,7 +22,7 @@ COPY ./plugins/ ./databases/plugins/
 RUN datasette install datasette-hashed-urls
 
 # Build the Panoptes data CSVs with NodeJS
-FROM node:18-alpine AS panoptesData
+FROM node:20-alpine AS panoptesData
 
 WORKDIR /app
 
