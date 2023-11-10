@@ -159,6 +159,8 @@ async function writeProjectData(project, subjects = []) {
   try {
     const csvRows = formatSubjectsForCsv(subjects, project.metadata_fields)
     const data = unparse(csvRows)
+      .replaceAll(',FALSE', ',0')
+      .replaceAll(',TRUE', ',1')
     const filename = `${OUTPUT_DIR}${TABLE_PREFIX}${project.id}.csv`
     await fs.writeFile(filename, data, 'utf8', onWriteFile)
     return subjects.length
