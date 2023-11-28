@@ -13,6 +13,7 @@ Or as JSON.
 
 https://subject-set-search-api.zooniverse.org/subjects/92752.json?_sort=rowid&Date__contains=December
 
+Queries use the [Datasette JSON API](https://docs.datasette.io/en/stable/json_api.html) with [column filter arguments](https://docs.datasette.io/en/stable/json_api.html#table-arguments).
 ## Installation
 
 Use docker and docker-compose, no other way is supported
