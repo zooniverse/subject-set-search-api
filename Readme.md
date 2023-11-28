@@ -23,7 +23,7 @@ Use docker and docker-compose, no other way is supported
 
 Generate some test data by writing some csv files to `./data/`. Each file will be named after a subject set ID: `12345.csv`.
 ```
-python subject-set.py
+node src/subject-set.js
 ```
 ## Building the SQLite db(s)
 
