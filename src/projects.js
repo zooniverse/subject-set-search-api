@@ -45,6 +45,12 @@ const PROJECTS = [
       "image1", "image2", "internal_id", "group_id", "part_number", "folder", "#Hazard", "condition", "item", "picture_agency", "photographer", "oversize", "sensitive_image", "sensitive_image_note", "problematic_language", "probelmatic_language_notes", "#Other Number", "notes"
       // Yes, there's a typo in probelmatic_language_notes.
     ]
+  }, {
+    "name": "Stereovision",
+    "id": 23052,
+    "metadata_fields": [
+      "creator", "file name", "credit line", "creator.role", "object_number", "production.date", "association.person"
+    ]
   }
 ]
 /*
