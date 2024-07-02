@@ -49,7 +49,7 @@ const PROJECTS = [
     "name": "Stereovision",
     "id": 23052,
     "metadata_fields": [
-      "creator", "file name", "credit line", "creator.role", "object_number", "production.date", "association.person"
+      "file name", "object_number", "object_name", "creator", "creator.role", "production.date", "association.person", "credit line"
     ]
   }
 ]
