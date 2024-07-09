@@ -24,7 +24,8 @@ async function getPagedSubjects(subjectSet, page = 1) {
   const { subjects, meta } = await fetchWithRetry('/subjects', {
     subject_set_id: id,
     page_size: PAGE_SIZE,
-    page
+    page,
+    sort: 'id'
   })
   const rows = subjects.map(subject => subjectMetadataRow(subject, indexFields))
   if (meta.subjects.page_count > page) {

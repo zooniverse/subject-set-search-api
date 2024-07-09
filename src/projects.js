@@ -140,7 +140,8 @@ async function fetchSubjectsByPage(projectId = '', page = 1, pageSize = 100) {
     const { subjects, meta }  = await fetchWithRetry('/subjects', {
       project_id: projectId,
       page,
-      page_size: pageSize
+      page_size: pageSize,
+      sort: 'id'
     })
     return { subjects, meta: meta.subjects }
   } catch (err) {
