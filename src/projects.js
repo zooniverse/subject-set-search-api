@@ -35,11 +35,13 @@ const PROJECTS = [
     "id": 21084,
     "metadata_fields": [ "Item", "Notes", "folder", "image1", "image2", "#Hazard", "Oversize", "group_id", "Condition", "internal_id", "part_number", "Photographer", "#Other Number", "picture_agency", "Sensitive_Image", "Problematic_Language", "Notes on Problematic Language" ]
   }, {
+  /*
     "name": "Scarlets & Blues (Performance Test Only)",  // Feel free to delete once Community Catalog goes live
     "id": 12268,
     "metadata_fields": [ "Date", "Page", "image", "Catalogue" ]
   }, {
-    "name": "How Did We Get Here?",
+  */
+  "name": "How Did We Get Here?",
     "id": 20816,
     "metadata_fields": [
       "image1", "image2", "internal_id", "group_id", "part_number", "folder", "#Hazard", "condition", "item", "picture_agency", "photographer", "oversize", "sensitive_image", "sensitive_image_note", "problematic_language", "probelmatic_language_notes", "#Other Number", "notes"
@@ -50,7 +52,10 @@ const PROJECTS = [
     "id": 23052,
     "metadata_fields": [
       "file name", "object_number", "object_name", "creator", "creator.role", "production.date", "association.person", "credit line"
-    ]
+    ],
+    "special_compensators": {
+      "metadata_field_name_ignore_case": true
+    }
   }
 ]
 /*
@@ -163,7 +168,7 @@ Output:
  */
 async function writeProjectData(project, subjects = []) {
   try {
-    const csvRows = formatSubjectsForCsv(subjects, project.metadata_fields)
+    const csvRows = formatSubjectsForCsv(subjects, project.metadata_fields, project.special_compensators)
     const data = unparse(csvRows)
       .replaceAll(',FALSE', ',0')
       .replaceAll(',TRUE', ',1')
@@ -193,7 +198,7 @@ Output:
 (array of objects) array of subjects, in simple key-value pairs corresponding
   to the project's required CSV format.
  */
-function formatSubjectsForCsv(subjects = [], metadata_fields = []) {
+function formatSubjectsForCsv(subjects = [], metadata_fields = [], special_compensators = {}) {
   return subjects.map(subject => {
     const row = {}
 
@@ -203,7 +208,22 @@ function formatSubjectsForCsv(subjects = [], metadata_fields = []) {
     // Add metadata-specific fields
     // TODO: handle metadata fields with special characters, e.g. # and !
     metadata_fields.forEach(field => {
-      row[field] = subject.metadata[field] || ''
+      // Enabled for projects where there's an inconsistent CapItaLisatiOn oF
+      // MeTaDaTa fIeld NaMes between Subjects.
+      // e.g subject 1 has subject.metadata.file_name,
+      // while subject 2 has subject.metadata.File_Name
+      if (special_compensators?.metadata_field_name_ignore_case) {
+        let value = ''
+        Object.entries(subject.metadata).forEach(([key, val]) => {
+          if (key.toLowerCase?.() === field?.toLowerCase?.()) {
+            value = val
+          }
+        })
+        row[field] = value
+
+      } else {  // Default
+        row[field] = subject.metadata[field] || ''
+      }
     })
 
     return row
