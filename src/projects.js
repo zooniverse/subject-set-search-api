@@ -53,8 +53,13 @@ const PROJECTS = [
     "metadata_fields": [
       "file name", "object_number", "object_name", "creator", "creator.role", "production.date", "association.person", "credit line"
     ],
+    "special_rules" : {
+      "exclude_subject_sets": [ "121688" ]
+      // 121688 is the "betatest" subject set, and has entries duplicated on the 122511 "launch" subject set.
+    },
     "special_compensators": {
       "metadata_field_name_ignore_case": true
+      // e.g. some subjects use "Object_Name" instead of "object_name"
     }
   }
 ]
@@ -100,7 +105,10 @@ Output:
  */
 async function processOneProject(project) {
   try {
-    const subjects = await fetchAllSubjects(project.id)
+    let subjects = await fetchAllSubjects(project.id)
+    if (project.special_rules) {
+      subjects = refineSubjectsSelection(subjects, project.special_rules)
+    }
     return await writeProjectData(project, subjects)
 
   } catch (err) {
@@ -155,6 +163,22 @@ async function fetchSubjectsByPage(projectId = '', page = 1, pageSize = 100) {
     throw(err)
   }
 }
+
+/*  Applies special rules to the subject selection.
+ */
+function refineSubjectsSelection(subjects = [], specialRules = {}) {
+  let selectedSubjects = subjects.slice()
+
+  // Filter out Subjects from specific Subject Sets.
+  // Useful for removing beta Subjects.
+  selectedSubjects = selectedSubjects.filter(subject => (  // For each Subject, remove it if...
+    !subject.links?.subject_sets?.some(sset => (  // ...any of its linked subject sets...
+      specialRules.exclude_subject_sets.includes(sset)  // ...are in the list of ignored/excluded subject sets.
+  ))))
+  
+  return selectedSubjects
+}
+
 
 /*
 Writes all fetched Subjects from one Project to a CSV file.
