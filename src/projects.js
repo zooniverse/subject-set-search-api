@@ -106,9 +106,7 @@ Output:
 async function processOneProject(project) {
   try {
     let subjects = await fetchAllSubjects(project.id)
-    if (project.special_rules) {
-      subjects = refineSubjectsSelection(subjects, project.special_rules)
-    }
+    subjects = refineSubjectsSelection(subjects, project.special_rules)
     return await writeProjectData(project, subjects)
 
   } catch (err) {
@@ -164,17 +162,25 @@ async function fetchSubjectsByPage(projectId = '', page = 1, pageSize = 100) {
   }
 }
 
-/*  Applies special rules to the subject selection.
+/*  Cleans up and applies special rules to the subject selection.
  */
 function refineSubjectsSelection(subjects = [], specialRules = {}) {
   let selectedSubjects = subjects.slice()
 
+  // Filter out Subjects that don't belong to any Subject Sets
+  // i.e. remove deleted Subjects
+  selectedSubjects = selectedSubjects.filter(subject => (
+    subject.links?.subject_sets?.length > 0
+  ))
+
   // Filter out Subjects from specific Subject Sets.
   // Useful for removing beta Subjects.
-  selectedSubjects = selectedSubjects.filter(subject => (  // For each Subject, remove it if...
-    !subject.links?.subject_sets?.some(sset => (  // ...any of its linked subject sets...
-      specialRules.exclude_subject_sets.includes(sset)  // ...are in the list of ignored/excluded subject sets.
-  ))))
+  if (specialRules.exclude_subject_sets) {
+    selectedSubjects = selectedSubjects.filter(subject => (  // For each Subject, remove it if...
+      !subject.links?.subject_sets?.some(sset => (  // ...any of its linked subject sets...
+        specialRules.exclude_subject_sets.includes(sset)  // ...are in the list of ignored/excluded subject sets.
+    ))))
+  }
   
   return selectedSubjects
 }
