@@ -3,7 +3,7 @@ const { unparse } = require('papaparse')
 
 const fetchWithRetry = require('./fetchWithRetry')
 
-const PROJECT_IDS = [12268, 12561, 16957, 5481, 17426, 20163, 24686 ]
+const PROJECT_IDS = [ 12268, 12561, 16957, 5481, 17426, 20163, 24686 ]
 const PAGE_SIZE = 100
 
 function subjectMetadataRow(subject, indexFields = []) {
