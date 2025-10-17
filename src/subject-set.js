@@ -3,7 +3,7 @@ const { unparse } = require('papaparse')
 
 const fetchWithRetry = require('./fetchWithRetry')
 
-const PROJECT_IDS = [ 12268, 12561, 16957, 5481, 17426, 20163, 24686 ]
+const PROJECT_IDS = [ 24686 ]
 const PAGE_SIZE = 100
 
 function subjectMetadataRow(subject, indexFields = []) {
@@ -36,13 +36,25 @@ async function getPagedSubjects(subjectSet, page = 1) {
   }
 }
 
-async function getSubjectSets(project) {
+async function getPagedSubjectSets(project, page = 1) {
   const ids = project.links.subject_sets
-  const { subject_sets } = await fetchWithRetry('/subject_sets', {
+  const response = await fetchWithRetry('/subject_sets', {
     id: ids.join(','),
-    page_size: ids.length
+    page_size: PAGE_SIZE,
+    page
   })
-  const indexedSets = subject_sets.filter(s => !!s.metadata.indexFields)
+  const { subject_sets, meta } = response
+  if (meta.subject_sets.page_count > page) {
+    const nextPage = await getPagedSubjectSets(project, page + 1)
+    return subject_sets.concat(nextPage)
+  } else {
+    return subject_sets
+  }
+}
+
+async function getSubjectSets(project) {
+  const subjectSets = await getPagedSubjectSets(project)
+  const indexedSets = subjectSets.filter(s => !!s.metadata.indexFields)
   console.log({ id: project.id, sets: indexedSets.length })
   return indexedSets
 }
