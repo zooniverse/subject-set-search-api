@@ -9,7 +9,7 @@ for input_csv_file in $(find ./data/subjects -type f -name *.csv)
 do
   table_name="$(basename $input_csv_file .csv)"
   echo "Importing $input_csv_file to table: $table_name in db: ./databases/subjects.db"
-  sqlite-utils insert ./databases/subjects.db $table_name $input_csv_file --csv --replace --detect-types
+  sqlite-utils insert ./databases/subjects.db $table_name $input_csv_file --csv --replace
 done
 
 
@@ -18,7 +18,7 @@ for input_csv_file in $(find ./data/projects -type f -name *.csv)
 do
   table_name="$(basename $input_csv_file .csv)"
   echo "Importing $input_csv_file to table: $table_name in db: ./databases/projects.db"
-  sqlite-utils insert ./databases/projects.db $table_name $input_csv_file --csv --replace --detect-types
+  sqlite-utils insert ./databases/projects.db $table_name $input_csv_file --csv --replace
 done
 
 # inspect the databases to create and inspect file
